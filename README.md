@@ -1,4 +1,4 @@
-Install
+BRG4 Waltergasse - Moodle Administration Extensions
 
 Install
 
