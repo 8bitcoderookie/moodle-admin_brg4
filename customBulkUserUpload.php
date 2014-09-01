@@ -61,7 +61,7 @@ function getForm() {
 		<li>idnumber is missing or beginns with "L"=> cohort "teacher"</li>
 		<li>else => cohort "student"</li>
 	</ul>';
-	$out .= '<p><code><strong>username; lastname; firstname; [idnumber]</strong></code></p>';
+	$out .= '<p><code><strong>username; lastname; firstname; email; [idnumber]</strong></code></p>';
 	$out .= '<textarea name="userdata" rows="20" cols="80"></textarea>';
 	$out .= '<p><input type="submit" name="submit" value="Submit"></p>';
 	$out .= '</form>';
@@ -99,6 +99,7 @@ function processCVSdata($data) {
 		$username = "";
 		$lastname = "";
 		$firstname = "";
+		$email = "";
 		$idnumber = "";
 		$rowData = preg_split("/;/", $line);
 		$rowDataCount = count($rowData);
@@ -112,14 +113,17 @@ function processCVSdata($data) {
 			$firstname = trim($rowData[2]);
 		}
 		if ($rowDataCount > 3) {
+			$email = trim($rowData[3]);
+		}
+		if ($rowDataCount > 3) {
 			$idnumber = trim($rowData[3]);
 		}
-		$report .= "<br>processing: [".$line."]: ".validateDataAndInsertIntoDB($username, $lastname, $firstname, $idnumber)."\n";
+		$report .= "<br>processing: [".$line."]: ".validateDataAndInsertIntoDB($username, $lastname, $firstname, $email, $idnumber)."\n";
 	}
 	return $report;
 }
 
-function validateDataAndInsertIntoDB($username, $lastname, $firstname, $idnumber) {
+function validateDataAndInsertIntoDB($username, $lastname, $firstname, $email, $idnumber) {
 	if (empty($username)) {
 		return ("<strong>username missing - row omitted</strong>");
 	}
@@ -128,6 +132,9 @@ function validateDataAndInsertIntoDB($username, $lastname, $firstname, $idnumber
 	}
 	if (empty($firstname)) {
 		return ("<strong>firstname missing - row omitted</strong>");
+	}
+	if (empty($email)) {
+		return ("<strong>email missing - row omitted</strong>");
 	}
 	$idOwnerIDnumber = getIsForThisIDnumber($idnumber);
 	$idOwnerUsername = getIsForThisUsername($username);
@@ -147,7 +154,7 @@ function validateDataAndInsertIntoDB($username, $lastname, $firstname, $idnumber
 		}
 	}
 	else {
-		$status = insertIntoDB($username, $lastname, $firstname, $idnumber);
+		$status = insertIntoDB($username, $lastname, $firstname, $email, $idnumber);
 	}
 	return $status;
 }
@@ -238,7 +245,7 @@ function getIsForThisUsername($username) {
 	}
 }
 
-function insertIntoDB($username, $lastname, $firstname, $idnumber) {
+function insertIntoDB($username, $lastname, $firstname, $email, $idnumber) {
 	global $db, $mnethostid;
 	$query = "";
 	$query .= 'INSERT INTO mdl_user (';
@@ -271,7 +278,7 @@ function insertIntoDB($username, $lastname, $firstname, $idnumber) {
 	$query .= '"'.$idnumber.'",';
 	$query .= '"198bb50085a9db4e335b851e74dd6366",';
 	$query .= '"ldap",';
-	$query .= '"email.bitte@gmx.at",';
+	$query .= '"'.$email.'",';
 	$query .= '1,';
 	$query .= $mnethostid.',';
 	$query .= '0,';
@@ -418,93 +425,6 @@ function addToCohort($userid, $cohortid, $infoSuccess) {
 		}
 	}
 }
-/*
-function addToCohortStudent($userid) {
-	global $db,$CohortStudentId;
-	$cohortName = "SchuelerInnen";
-	if ($CohortStudentId == -1) {
-		$query = 'SELECT id FROM mdl_cohort WHERE name LIKE "'.$cohortName.'";';
-		$result = mysql_query($query, $db);
-		if (!$result) {
-
-			return ' <strong>Kohorte Schüler Ungültige Abfrage:</strong> '.mysql_error();
-		}
-		else {
-			$num_rows = mysql_num_rows($result);
-			if ($num_rows > 0) {
-				$row = mysql_fetch_array($result);
-				$CohortStudentId = $row["id"];
-			}
-			else { // create cohort
-				$cohortDescription = "In dieser Cohorte sind alle Sch&uuml;ler und Sch&uuml;lerinnen zusammengefasst.";
-				$cohortContextid = 1;
-				$query = "INSERT INTO mdl_cohort VALUES (NULL, ".$cohortContextid.", '".$cohortName."', NULL, '".$cohortDescription."',1,'', ".time().", ".time().");";
-				$result = mysql_query($query, $db);
-				if (!$result) {
-					return ' <strong>Konnte Kohorte Schüler nicht anlegen:</strong> '.mysql_error();
-				}
-				else {
-					$CohortStudentId = mysql_insert_id($db);
-				}
-			}
-		}
-	}
-	// now that we can be sure to have a valid cohort id...
-	// test if user already in cohort enlisted...
-	
-	$query = "INSERT INTO mdl_cohort_members VALUES (NULL, ".$CohortStudentId.", ".$userid.", ".time().");";
-	$result = mysql_query($query);
-	if (!$result) {
-		return ' <strong>Konnte Schüler in Kohorte nicht eintragen:</strong> '.mysql_error();
-	}
-	else {
-		return ' (=> Kohorte Schüler)';
-	}
-}
-
-
-
-function addToCohortTeacher($userid) {
-	global $db,$CohortTeacherId;
-	$cohortName = "LehrerInnen";
-	if ($CohortTeacherId == -1) {
-		$query = 'SELECT id FROM mdl_cohort WHERE name LIKE "'.$cohortName.'";';
-		$result = mysql_query($query, $db);
-		if (!$result) {
-			return ' Kohorte Lehrer Ungültige Abfrage: '.mysql_error();
-		}
-		else {
-			$num_rows = mysql_num_rows($result);
-			if ($num_rows > 0) {
-				$row = mysql_fetch_array($result);
-				$CohortTeacherId = $row["id"];
-			}
-			else { // create cohort
-				$cohortDescription = "In dieser Cohorte sind alle Leher und Lehrerinnen zusammengefasst.";
-				$cohortContextid = 1;
-				$query = "INSERT INTO mdl_cohort VALUES (NULL, ".$cohortContextid.", '".$cohortName."', NULL, '".$cohortDescription."',1,'', ".time().", ".time().");";
-				$result = mysql_query($query, $db);
-				if (!$result) {
-					return ' Konnte Kohorte Lehrer nicht anlegen: '.mysql_error();
-				}
-				else {
-					$CohortTeacherId = mysql_insert_id($db);
-				}
-			}
-		}
-	}
-	// now that we can be shure to have a valid cohort id...
-	$query = "INSERT INTO mdl_cohort_members VALUES (NULL, ".$CohortTeacherId.", ".$userid.", ".time().");";
-	$result = mysql_query($query);
-	if (!$result) {
-		return ' Konnte Lehrer in Kohorte nicht eintragen: '.mysql_error();
-	}
-	else {
-		return ' (=> Kohorte Lehrer)';
-	}
-}
-
-*/
 
 $submit = htmlspecialchars($_REQUEST["submit"]);
 $userdata = htmlspecialchars($_REQUEST["userdata"]);
@@ -519,8 +439,3 @@ else {
 outputHTML($htmlTitle,$htmlBody);
 
 ?>
-
-	
-
-  
-
