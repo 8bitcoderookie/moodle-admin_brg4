@@ -81,8 +81,8 @@ function getMnethostid() {
 				if ($mnethostid == -1) { 
 					if (strpos($row["wwwroot"],'localhost') !== false) { // look for localhost
 						$mnethostid = $row["id"];
+						return 'mnethostid set to '.$mnethostid.' ('.$row["name"].' '.$row["wwwroot"].' '.$row["ip_address"].')<br>';
 					}
-					return 'mnethostid set to '.$mnethostid.' ('.$row["name"].' '.$row["wwwroot"].' '.$row["ip_address"].')<br>';
 				}
 			}
 		}
