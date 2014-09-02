@@ -78,8 +78,10 @@ function getMnethostid() {
 	else {
 		if (mysql_num_rows($result) > 0) {
 			while ($row = mysql_fetch_array($result)) {
-				if ($mnethostid == -1) { // just get first valid index...
-					$mnethostid = $row["id"];
+				if ($mnethostid == -1) { 
+					if (strpos($row["wwwroot"],'localhost') !== false) { // look for localhost
+						$mnethostid = $row["id"];
+					}
 					return 'mnethostid set to '.$mnethostid.' ('.$row["name"].' '.$row["wwwroot"].' '.$row["ip_address"].')<br>';
 				}
 			}
