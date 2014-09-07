@@ -117,8 +117,8 @@ function processCVSdata($data) {
 		if ($rowDataCount > 3) {
 			$email = trim($rowData[3]);
 		}
-		if ($rowDataCount > 3) {
-			$idnumber = trim($rowData[3]);
+		if ($rowDataCount > 4) {
+			$idnumber = trim($rowData[4]);
 		}
 		$report .= "<br>processing: [".$line."]: ".validateDataAndInsertIntoDB($username, $lastname, $firstname, $email, $idnumber)."\n";
 	}
