@@ -33,15 +33,11 @@ $PAGE->set_url($CFG->wwwroot.'/admin/brg4/klassenCohortenGen.php');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('standard');
 
-$htmlTitle = 'Erstellen der Klassen-Cohorten';
-$htmlHeading = 'Erstellen der Klassen-Cohorten';
-
 //-------------------
 
 if (!is_siteadmin()) {
 	exit(";-)");
 }
-
 
 // ================================
 
@@ -49,20 +45,36 @@ if (!is_siteadmin()) {
 // admin_externalpage_setup('brg4cohortbulkgen'); // has to be defined in ../settings/users.php
 
 $htmlTitle = "Class Cohort Generation for BRG4";
+$htmlHeading = 'Class Cohort Generation for BRG4';
 $htmlBody = "";
 $classCohortIDs = array();
 
-$useprefix = htmlspecialchars($_REQUEST["useprefix"]);
-$submit = htmlspecialchars($_REQUEST["submit"]);
-$userdata = htmlspecialchars($_REQUEST["userdata"]);
-$classCohortPrefix = htmlspecialchars($_REQUEST['prefix']);
+$useprefix = '';
+if (isset($_REQUEST['submit'])) {
+	$useprefix = htmlspecialchars($_REQUEST['submit']);
+}
+
+$submit = '';
+if (isset($_REQUEST['userdata'])) {
+	$submit = htmlspecialchars($_REQUEST['userdata']);
+}
+
+$userdata = '';
+if (isset($_REQUEST['userdata'])) {
+	$userdata = htmlspecialchars($_REQUEST['userdata']);
+}
+
+$classCohortPrefix = "";
+if (isset($_REQUEST['prefix'])) {
+	$classCohortPrefix = htmlspecialchars($_REQUEST['prefix']);
+}
 
 
-function outputHTML($title,$body) {
+function outputHTML($title,$heading,$body) {
 	global $PAGE, $OUTPUT;
-	$PAGE->set_title($htmlTitle); // optional
-	// $PAGE->set_heading($htmlHeading); // must be set in order to display page header!
-	$PAGE->navbar->add($htmlTitle);
+	$PAGE->set_title($title); // optional
+	$PAGE->set_heading($heading); // must be set in order to display page header!
+	$PAGE->navbar->add($title);
 	echo $OUTPUT->header();
 	// echo $OUTPUT->heading($htmlHeading);
 	// echo $OUTPUT->box_start();
@@ -330,7 +342,7 @@ else {
 	$htmlBody = "<h2>".$htmlTitle." - Report</h2><p>".processCVSdata($userdata)."</p>";
 }
 
-outputHTML($htmlTitle,$htmlBody);
+outputHTML($htmlTitle,$htmlHeading,$htmlBody);
 
 ?>
 
