@@ -25,14 +25,28 @@ v1.1 (19.07.2011):	support vor subclasses (BI/ACG, BE/ME,...)
 
 // imports
 require('../../config.php');
-require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/authlib.php');
+// require_once($CFG->libdir.'/adminlib.php');
+// require_once($CFG->libdir.'/authlib.php');
 require('databaseconnect.php');
+
+$PAGE->set_url($CFG->wwwroot.'/admin/brg4/klassenCohortenGen.php');
+$PAGE->set_context(context_system::instance());
+$PAGE->set_pagelayout('standard');
+
+$htmlTitle = 'Erstellen der Klassen-Cohorten';
+$htmlHeading = 'Erstellen der Klassen-Cohorten';
+
+//-------------------
+
+if (!is_siteadmin()) {
+	exit(";-)");
+}
+
 
 // ================================
 
 // ensure admin context
-admin_externalpage_setup('brg4cohortbulkgen'); // has to be defined in ../settings/users.php
+// admin_externalpage_setup('brg4cohortbulkgen'); // has to be defined in ../settings/users.php
 
 $htmlTitle = "Class Cohort Generation for BRG4";
 $htmlBody = "";
@@ -46,8 +60,11 @@ $classCohortPrefix = htmlspecialchars($_REQUEST['prefix']);
 
 function outputHTML($title,$body) {
 	global $PAGE, $OUTPUT;
-	$PAGE->set_title($title);
+	$PAGE->set_title($htmlTitle); // optional
+	// $PAGE->set_heading($htmlHeading); // must be set in order to display page header!
+	$PAGE->navbar->add($htmlTitle);
 	echo $OUTPUT->header();
+	// echo $OUTPUT->heading($htmlHeading);
 	// echo $OUTPUT->box_start();
 	echo $body;
 	// echo $OUTPUT->box_end();	
