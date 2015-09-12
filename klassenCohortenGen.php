@@ -22,9 +22,20 @@ v1.1 (19.07.2011):	support vor subclasses (BI/ACG, BE/ME,...)
 
 ****************************************************** */
 
+class userReturnObject {
+    var $id;
+	var $report;
+	var $firstname;
+	var $lastname;
+}
+
+class cohortReturnObject {
+    var $id;
+	var $report;
+}
 
 // imports
-require('../../config.php');
+require('../../../config.php');
 // require_once($CFG->libdir.'/adminlib.php');
 // require_once($CFG->libdir.'/authlib.php');
 require('databaseconnect.php');
@@ -147,7 +158,7 @@ function validateDataAndInsertIntoDB($class, $idnumberOrUsername,$subClassArray)
 
 function getUserIDbyIdnumber($idnumber) {
 	global $db;
-	$retObj = new stdClass;
+	$retObj = new userReturnObject;
 	$query = 'SELECT id,firstname,lastname FROM mdl_user WHERE idnumber LIKE "'.$idnumber.'";';
 	$result = mysql_query($query, $db);
 	if (!$result) {
@@ -197,8 +208,8 @@ function getUserIDbyUsername($username) {
 
 function createCohortIfNotExists($cohortName, $cohortDescription, $cohortContextid) {		// returns cohortID
 	global $db, $classCohortIDs;
-	$retObj = new stdClass;
-	if ($classCohortIDs[$cohortName]) { // allready listed in local array
+	$retObj = new cohortReturnObject;
+	if (array_key_exists($cohortName, $classCohortIDs)) { // allready listed in local array
 		$retObj->id = $classCohortIDs[$cohortName];
 	}
 	else {
@@ -217,7 +228,44 @@ function createCohortIfNotExists($cohortName, $cohortDescription, $cohortContext
 				$retObj->report = '';
 			}
 			else { // class cohort does not exist, create one
-				$query = "INSERT INTO mdl_cohort VALUES (NULL, ".$cohortContextid.", '".$cohortName."', NULL, '".$cohortDescription."',1,'', ".time().", ".time().");";
+/*
+Moodle 2.9
++-----+-----------+---------+----------+--------------------------------+-------------------+---------+-----------+-------------+--------------+
+| id  | contextid | name    | idnumber | description                    | descriptionformat | visible | component | timecreated | timemodified |
++-----+-----------+---------+----------+--------------------------------+-------------------+---------+-----------+-------------+--------------+
+| 145 |         1 | 2013-1A | NULL     | Klasse 1A (Schuljahr 2013-/14) |                 1 |       1 |           |  1377079159 |   1377079159 |
++-----+-----------+---------+----------+--------------------------------+-------------------+---------+-----------+-------------+--------------+
+*/
+				$current_time_stamp = time();
+				$query = <<<SQL
+					INSERT INTO `mdl_cohort` (
+						`id`, 
+						`contextid`, 
+						`name`, 
+						`idnumber`, 
+						`description`, 
+						`descriptionformat`, 
+						`visible`, 
+						`component`, 
+						`timecreated`, 
+						`timemodified`
+					) VALUES (
+						NULL,
+						'{$cohortContextid}',
+						'{$cohortName}',
+						NULL,
+						'{$cohortDescription}',
+						'1',
+						'1',
+						'',
+						'{$current_time_stamp}',
+						'{$current_time_stamp}'
+					);
+SQL;
+/*
+	// Moodle 2.0 - 2.7
+	$query = "INSERT INTO mdl_cohort VALUES (NULL, ".$cohortContextid.", '".$cohortName."', NULL, '".$cohortDescription."',1,'', ".time().", ".time().");";
+*/
 				$result = mysql_query($query);
 				if (!$result) {
 					$retObj->report = ' <strong>Could not create cohort "'.$cohortName.'": '.mysql_error().".</strong>";

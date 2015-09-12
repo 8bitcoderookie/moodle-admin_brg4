@@ -1,0 +1,3 @@
+<?php
+	// If this file does not exist, a Moodle Warning is issued...
+?>

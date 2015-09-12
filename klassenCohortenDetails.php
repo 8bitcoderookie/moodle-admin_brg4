@@ -11,7 +11,7 @@ description: Lists all courses where a cohort is enrolled
 
 
 // imports
-require('../../config.php');
+require('../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/authlib.php');
 require('databaseconnect.php');
